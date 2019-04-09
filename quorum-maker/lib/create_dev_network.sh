@@ -108,11 +108,18 @@ function createAccount(){
     re="\{([^}]+)\}"
     if [[ $mAccountAddress =~ $re ]];
     then
+        if [ $i -eq 1 ]; then
+            cat lib/dev/genesis_template.json >> $projectName/genesis.json
+            DATA="\"0x0000000000000000000000000000000000000000000000000000000000000000"${BASH_REMATCH[1]}"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\""
+            PATTERN="s/#ExtraData#/$DATA/g"
+            sed -i $PATTERN $projectName/genesis.json
+        fi
         mAccountAddress="0x"${BASH_REMATCH[1]};
         echo $mAccountAddress > $projectName/node$1/coinbase.txt
     fi
 
     cp datadir/keystore/* $projectName/node$1/node/qdata/keystore/node$1key
+    cp lib/dev/passwords.txt $projectName/node$1/node
 
     
 
@@ -152,14 +159,12 @@ function addNodeToDC(){
         echo "      - \"2${i}00:22000\"" >> $projectName/docker-compose.yml
         echo "      - \"2${i}01:22001\"" >> $projectName/docker-compose.yml
         echo "      - \"2${i}02:22002\"" >> $projectName/docker-compose.yml
-        echo "      - \"2${i}03:22003\"" >> $projectName/docker-compose.yml
         echo "      - \"2${i}04:22004\"" >> $projectName/docker-compose.yml
 
         echo -ne "\tlocalhost" >> $projectName/project.info
         echo -ne "\t2${i}00" >> $projectName/project.info
         echo -ne "\t2${i}01" >> $projectName/project.info
         echo -ne "\t2${i}02" >> $projectName/project.info
-        echo -ne "\t2${i}03" >> $projectName/project.info
         echo -ne "\t2${i}04\n" >> $projectName/project.info
 
         echo -ne "\t\t\"endpoint\": \"http://localhost:2${i}00\"\n" >> $projectName/poc-config.json
@@ -175,7 +180,6 @@ function addNodeToDC(){
         echo -ne "\t22000" >> $projectName/project.info
         echo -ne "\t22001" >> $projectName/project.info    
         echo -ne "\t22002" >> $projectName/project.info
-        echo -ne "\t22003" >> $projectName/project.info
         echo -ne "\t22004\n" >> $projectName/project.info
 
         echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1+1)):2${i}00\"\n" >> $projectName/poc-config.json
@@ -233,7 +237,6 @@ function generateGenesis(){
     touch $projectName/accountsBalances.txt
 
     PATTERN="s|#CHAIN_ID#|${NET_ID}|g"
-    cat lib/dev/genesis_template.json >> $projectName/genesis.json
     sed -i $PATTERN $projectName/genesis.json
 
     DATA=`cat $projectName/accountsBalances.txt | tr -d '[:space:]' | tr -d '\n'`
@@ -370,7 +373,7 @@ function main(){
     echo -e $GREEN'Project '$projectName' created successfully. Please execute docker-compose up from '$projectName' directory'$COLOR_END
 
     echo ""
-    (printf "NODE PUBLIC-KEY IP RPC WHISPER $PRIVACY RAFT NODEMANAGER\n" \
+    (printf "NODE PUBLIC-KEY IP RPC WHISPER $PRIVACY NODEMANAGER\n" \
         ; cat $projectName/project.info)
     echo ""
 }

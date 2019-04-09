@@ -29,15 +29,14 @@ function upcheck() {
 }
 
 NETID=#network_Id_value#
-RA_PORT=22003
 R_PORT=22000
 W_PORT=22001
 NODE_MANAGER_PORT=22004
 CURRENT_NODE_IP=#node_ip#
 
 
-ENABLED_API="admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft"
-GLOBAL_ARGS="--raft --nodiscover --gcmode=archive --networkid $NETID --rpc --rpcaddr 0.0.0.0 --rpcapi $ENABLED_API --emitcheckpoints"
+ENABLED_API="admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,clique"
+GLOBAL_ARGS="--nodiscover --gcmode=archive --networkid $NETID --rpc --rpcaddr 0.0.0.0 --rpcapi $ENABLED_API --emitcheckpoints --syncmode full --mine --minerthreads 1 --unlock 0 --password passwords.txt"
 
 rm -f qdata/*lock.db
 
@@ -54,7 +53,7 @@ echo "[*] Waiting for Crux to start..." >> qdata/gethLogs/#mNode#.log
 upcheck
 
 echo "[*] Starting #mNode# node" >> qdata/gethLogs/#mNode#.log
-echo "[*] geth --verbosity 6 --datadir qdata" $GLOBAL_ARGS" --raftport $RA_PORT --rpcport "$R_PORT "--port "$W_PORT "--nat extip:"$CURRENT_NODE_IP>> qdata/gethLogs/#mNode#.log
+echo "[*] geth --verbosity 6 --datadir qdata" $GLOBAL_ARGS" --rpcport "$R_PORT "--port "$W_PORT "--nat extip:"$CURRENT_NODE_IP>> qdata/gethLogs/#mNode#.log
 
-PRIVATE_CONFIG=qdata/#mNode#.ipc geth --verbosity 6 --datadir qdata $GLOBAL_ARGS --rpccorsdomain "*" --raftport $RA_PORT --rpcport $R_PORT --port $W_PORT --nat extip:$CURRENT_NODE_IP 2>>qdata/gethLogs/#mNode#.log &
+PRIVATE_CONFIG=qdata/#mNode#.ipc geth --verbosity 6 --datadir qdata $GLOBAL_ARGS --rpccorsdomain "*" --rpcport $R_PORT --port $W_PORT --nat extip:$CURRENT_NODE_IP 2>>qdata/gethLogs/#mNode#.log &
 
