@@ -11,11 +11,16 @@ function generateNodeConf(){
     PATTERN="s/#CURRENT_IP#/${DOCKER_NETWORK_IP}$(($1+1))/g"
     sed -i $PATTERN $projectName/node$1/node/node$1.conf
 
-    if [ $i -gt 1 ]; then
-        echo othernodes = "\"http://${DOCKER_NETWORK_IP}2:22002/\"" >> $projectName/node$1/node/node$1.conf
-    else
-        echo othernodes = "\"http://${DOCKER_NETWORK_IP}3:22002/\"" >> $projectName/node$1/node/node$1.conf
-    fi
+    case $1 in
+        1) echo othernodes = "\"http://${DOCKER_NETWORK_IP}3:22002/\"" >> $projectName/node$1/node/node$1.conf;;
+        2) echo othernodes = "\"http://${DOCKER_NETWORK_IP}4:22002/\"" >> $projectName/node$1/node/node$1.conf;;
+        *) echo othernodes = "\"http://${DOCKER_NETWORK_IP}2:22002/\"" >> $projectName/node$1/node/node$1.conf;;
+    esac
+    # if [ $i -gt 1 ]; then
+    #     echo othernodes = "\"http://${DOCKER_NETWORK_IP}2:22002/\"" >> $projectName/node$1/node/node$1.conf
+    # else
+    #     echo othernodes = "\"http://${DOCKER_NETWORK_IP}3:22002/\"" >> $projectName/node$1/node/node$1.conf
+    # fi
 }
 
 function generateSetupConf(){
