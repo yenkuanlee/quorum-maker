@@ -38,10 +38,10 @@ function generateSetupConf(){
 
 #function to input role name
 function inputName() {
-    read -p "Enter role name(node$1): " role
+    read -p "Enter role id(node$1): " role
     echo -ne "ROLE=$role\n" > $projectName/node$1/setup.conf
-    echo -ne "\t{\n" >> $projectName/poc-config.json
-    echo -ne "\t\t\"name\": \"$role\",\n" >> $projectName/poc-config.json
+    echo -ne "\t{\n" >> $projectName/peers.json
+    echo -ne "\t\t\"id\": \"$role\",\n" >> $projectName/peers.json
 }
 
 #function to generate keyPair for node
@@ -50,7 +50,7 @@ function generateKeyPair(){
     echo -ne "\n" | crux --generate-keys=node$1a 1>>/dev/null
 
     pubkey=$(cat node$1.pub)
-    echo -ne "\t\t\"pubkey\": \"$pubkey\",\n" >> $projectName/poc-config.json
+    echo -ne "\t\t\"publicKey\": \"$pubkey\",\n" >> $projectName/peers.json
 
     mv node$1*.*  $projectName/node$1/node/qdata/keys/.
 
@@ -134,7 +134,7 @@ function createAccount(){
     fi
 
     echo "\"$mAccountAddress\": {\"balance\": \"1000000000000000000000000000\"}$COMMA">> $projectName/accountsBalances.txt
-    echo -ne "\t\t\"address\": \"$mAccountAddress\",\n" >> $projectName/poc-config.json
+    echo -ne "\t\t\"defaultAccount\": \"$mAccountAddress\",\n" >> $projectName/peers.json
     
     rm -rf datadir
 }
@@ -172,11 +172,11 @@ function addNodeToDC(){
         echo -ne "\t2${i}02" >> $projectName/project.info
         echo -ne "\t2${i}04\n" >> $projectName/project.info
 
-        echo -ne "\t\t\"endpoint\": \"http://localhost:2${i}00\"\n" >> $projectName/poc-config.json
+        echo -ne "\t\t\"endpoint\": \"http://localhost:2${i}00\"\n" >> $projectName/peers.json
         if [ $i -eq $nodeCount ]; then
-            echo -ne "\t}\n" >> $projectName/poc-config.json
+            echo -ne "\t}\n" >> $projectName/peers.json
         else
-            echo -ne "\t},\n" >> $projectName/poc-config.json
+            echo -ne "\t},\n" >> $projectName/peers.json
         fi
 
     else
@@ -187,11 +187,11 @@ function addNodeToDC(){
         echo -ne "\t22002" >> $projectName/project.info
         echo -ne "\t22004\n" >> $projectName/project.info
 
-        echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1+1)):2${i}00\"\n" >> $projectName/poc-config.json
+        echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1+1)):2${i}00\"\n" >> $projectName/peers.json
         if [ $i -eq $nodeCount ]; then
-            echo -ne "\t}\n" >> $projectName/poc-config.json
+            echo -ne "\t}\n" >> $projectName/peers.json
         else
-            echo -ne "\t},\n" >> $projectName/poc-config.json
+            echo -ne "\t},\n" >> $projectName/peers.json
         fi        
     fi
 
@@ -358,11 +358,11 @@ function main(){
 
     cleanup
 
-    echo [ > $projectName/poc-config.json
+    echo [ > $projectName/peers.json
     echo [ > $projectName/static-nodes.json
     createNodeDirs
     echo ] >> $projectName/static-nodes.json
-    echo ] >> $projectName/poc-config.json
+    echo ] >> $projectName/peers.json
 
     copyStaticNodeJson
     generateGenesis
