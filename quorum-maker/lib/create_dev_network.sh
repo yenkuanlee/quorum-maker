@@ -2,6 +2,7 @@
 
 source qm.variables
 source lib/common.sh
+source lib/parse_yaml.sh
 
 #create node configuration file
 function generateNodeConf(){
@@ -38,8 +39,8 @@ function generateSetupConf(){
 
 #function to input role name
 function inputName() {
-    read -p "Enter role id(node$1): " role
-    echo -ne "ROLE=$role\n" > $projectName/node$1/setup.conf
+    eval role='$node'$1'_id'
+    echo -ne "ROLE=${role}\n" > $projectName/node$1/setup.conf
     echo -ne "\t{\n" >> $projectName/peers.json
     echo -ne "\t\t\"id\": \"$role\",\n" >> $projectName/peers.json
 }
@@ -98,7 +99,7 @@ function generateEnode(){
     if [ $i -eq $nodeCount ]; then
         COMMA=""
     fi
-    echo \"enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001?discport=0\&raftport=22003\"$COMMA >> $projectName/static-nodes.json
+    echo \"enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001?discport=0\"$COMMA >> $projectName/static-nodes.json
 
     
     cp nodekey $projectName/node$1/node/qdata/geth/.
@@ -204,10 +205,11 @@ function addNodeToDC(){
 
 function createNodeDirs(){
     i=1
+    eval $(parse_yaml config_name.yml)
     while : ; do
         # mkdir -p $projectName/node$i/node/keys
         mkdir -p $projectName/node$i/node/qdata/{keystore,geth,gethLogs,constellationLogs,keys}
-        echo -ne "\n"
+        # echo -ne "\n"
         inputName $i
         generateKeyPair $i
         copyStartTemplate $i
