@@ -205,7 +205,6 @@ function addNodeToDC(){
 
 function createNodeDirs(){
     i=1
-    eval $(parse_yaml config_name.yml)
     while : ; do
         # mkdir -p $projectName/node$i/node/keys
         mkdir -p $projectName/node$i/node/qdata/{keystore,geth,gethLogs,constellationLogs,keys}
@@ -349,11 +348,13 @@ function main(){
 
     readParameters $@
 
-    if [ -z "$NON_INTERACTIVE" ]; then
-        getInputWithDefault 'Please enter a project name' "TestNetwork" projectName $RED
-        getInputWithDefault 'Please enter number of nodes to be created' 3 nodeCount $GREEN
-    fi
-   
+    # if [ -z "$NON_INTERACTIVE" ]; then
+    #     getInputWithDefault 'Please enter a project name' "TestNetwork" projectName $RED
+    #     getInputWithDefault 'Please enter number of nodes to be created' 3 nodeCount $GREEN
+    # fi
+    eval $(parse_yaml config_name.yml)
+    projectName=$ProjectName
+    nodeCount=$ProjectName_nodenum
     echo -e $BLUE'Creating '$projectName' with '$nodeCount' nodes. Please wait... '$COLOR_END
 
     displayProgress $nodeCount 0

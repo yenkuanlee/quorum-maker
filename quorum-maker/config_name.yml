@@ -1,11 +1,13 @@
-node1:
-  id : b
+ProjectName: TestNetwork
+  nodenum: 4
+  node1:
+    id : b
 
-node2:
-  id : ce
+  node2:
+    id : ce
 
-node3:
-  id : e1
+  node3:
+    id : e1
 
-node4:
-  id : e2
+  node4:
+    id : e2
