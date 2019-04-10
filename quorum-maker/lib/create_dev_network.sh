@@ -39,7 +39,7 @@ function generateSetupConf(){
 
 #function to input role name
 function inputName() {
-    eval role='$node'$1'_id'
+    eval role='$project_node'$1'_id'
     echo -ne "ROLE=${role}\n" > $projectName/node$1/setup.conf
     echo -ne "\t{\n" >> $projectName/peers.json
     echo -ne "\t\t\"id\": \"$role\",\n" >> $projectName/peers.json
