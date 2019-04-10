@@ -353,8 +353,8 @@ function main(){
     #     getInputWithDefault 'Please enter number of nodes to be created' 3 nodeCount $GREEN
     # fi
     eval $(parse_yaml config_name.yml)
-    projectName=$ProjectName
-    nodeCount=$ProjectName_nodenum
+    projectName=$project_name
+    nodeCount=$project_nodenum
     echo -e $BLUE'Creating '$projectName' with '$nodeCount' nodes. Please wait... '$COLOR_END
 
     displayProgress $nodeCount 0
