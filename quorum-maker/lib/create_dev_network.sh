@@ -173,7 +173,7 @@ function addNodeToDC(){
         echo -ne "\t2${i}02" >> $projectName/project.info
         echo -ne "\t2${i}04\n" >> $projectName/project.info
 
-        echo -ne "\t\t\"endpoint\": \"http://localhost:2${i}00\"\n" >> $projectName/peers.json
+        echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1+1)):22000\"\n" >> $projectName/peers.json
         if [ $i -eq $nodeCount ]; then
             echo -ne "\t}\n" >> $projectName/peers.json
         else
