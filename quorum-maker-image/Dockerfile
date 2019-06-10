@@ -1,8 +1,9 @@
-FROM denny60004/ubuntu
-ENV DEBIAN_FRONTEND noninteractive
-ADD lib/install_baseimage.sh /root/quorum-maker/install_baseimage.sh
-RUN /root/quorum-maker/install_baseimage.sh
+FROM ubuntu
+# ENV DEBIAN_FRONTEND noninteractive
+# ADD lib/install_baseimage.sh /root/quorum-maker/install_baseimage.sh
+# RUN /root/quorum-maker/install_baseimage.sh
 
+ADD bin/solc /usr/local/bin
 ADD bin/geth /usr/local/bin
 ADD bin/bootnode /usr/local/bin
 ADD bin/crux /usr/local/bin
