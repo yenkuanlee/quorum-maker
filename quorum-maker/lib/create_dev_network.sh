@@ -67,6 +67,9 @@ function copyStartTemplate(){
     sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
     PATTERN="s/#node_ip#/${DOCKER_NETWORK_IP}$(($1+1))/g"
     sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
+    PATTERN="s|#enode_ip#|${BOOTNODE_IP}|g"
+    sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
+    # echo ${BOOTNODE_IP}
     
     chmod +x $projectName/node$1/node/start_node$1.sh
 
@@ -99,7 +102,10 @@ function generateEnode(){
     if [ $i -eq $nodeCount ]; then
         COMMA=""
     fi
-    echo \"enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001?discport=0\"$COMMA >> $projectName/static-nodes.json
+    # echo \"enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001?discport=0\"$COMMA >> $projectName/static-nodes.json
+    if [ $i -eq 1 ]; then
+        BOOTNODE_IP=enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001
+    fi
 
     
     cp nodekey $projectName/node$1/node/qdata/geth/.
@@ -211,8 +217,8 @@ function createNodeDirs(){
         # echo -ne "\n"
         inputName $i
         generateKeyPair $i
-        copyStartTemplate $i
         generateEnode $i
+        copyStartTemplate $i
         createAccount $i    
         generateNodeConf $i
         generateSetupConf $i
