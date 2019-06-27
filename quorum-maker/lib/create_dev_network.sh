@@ -30,7 +30,7 @@ function generateSetupConf(){
     echo 'THIS_NODEMANAGER_PORT=22004' >> $projectName/node$1/setup.conf
     echo 'RPC_PORT=22000' >> $projectName/node$1/setup.conf    
     echo 'RAFT_ID='$1 >> $projectName/node$1/setup.conf
-    echo 'CONTRACT_ADD=' >> $projectName/node$1/setup.conf
+    echo 'CONTRACT_ADD=0x0000000000000000000000000000000000000030' >> $projectName/node$1/setup.conf
     echo 'REGISTERED=' >> $projectName/node$1/setup.conf
     echo 'MODE=ACTIVE' >> $projectName/node$1/setup.conf
     echo 'STATE=I' >> $projectName/node$1/setup.conf
