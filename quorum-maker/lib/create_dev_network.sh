@@ -9,12 +9,12 @@ function generateNodeConf(){
     PATTERN="s/#mNode#/node$1/g"
     sed $PATTERN lib/dev/template.conf > $projectName/node$1/node/node$1.conf
 
-    PATTERN="s/#CURRENT_IP#/${DOCKER_NETWORK_IP}$(($1+1))/g"
+    PATTERN="s/#CURRENT_IP#/${DOCKER_NETWORK_IP}$(($1*2))/g"
     sed -i $PATTERN $projectName/node$1/node/node$1.conf
 
     case $1 in
-        1) echo othernodes = "\"http://${DOCKER_NETWORK_IP}3:22002/\"" >> $projectName/node$1/node/node$1.conf;;
-        2) echo othernodes = "\"http://${DOCKER_NETWORK_IP}4:22002/\"" >> $projectName/node$1/node/node$1.conf;;
+        1) echo othernodes = "\"http://${DOCKER_NETWORK_IP}4:22002/\"" >> $projectName/node$1/node/node$1.conf;;
+        2) echo othernodes = "\"http://${DOCKER_NETWORK_IP}6:22002/\"" >> $projectName/node$1/node/node$1.conf;;
         *) echo othernodes = "\"http://${DOCKER_NETWORK_IP}2:22002/\"" >> $projectName/node$1/node/node$1.conf;;
     esac
     # if [ $i -gt 1 ]; then
@@ -26,7 +26,7 @@ function generateNodeConf(){
 
 function generateSetupConf(){
     echo 'NODENAME='node$1 >> $projectName/node$1/setup.conf
-    echo 'CURRENT_IP='${DOCKER_NETWORK_IP}$(($1+1)) >> $projectName/node$1/setup.conf
+    echo 'CURRENT_IP='${DOCKER_NETWORK_IP}$(($1*2)) >> $projectName/node$1/setup.conf
     echo 'THIS_NODEMANAGER_PORT=22004' >> $projectName/node$1/setup.conf
     echo 'RPC_PORT=22000' >> $projectName/node$1/setup.conf    
     echo 'RAFT_ID='$1 >> $projectName/node$1/setup.conf
@@ -65,7 +65,7 @@ function copyStartTemplate(){
     sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
     PATTERN="s/#mNode#/node$1/g"
     sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
-    PATTERN="s/#node_ip#/${DOCKER_NETWORK_IP}$(($1+1))/g"
+    PATTERN="s/#node_ip#/${DOCKER_NETWORK_IP}$(($1*2))/g"
     sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
     PATTERN="s|#enode_ip#|${BOOTNODE_IP}|g"
     sed -i $PATTERN $projectName/node$1/node/start_node$1.sh
@@ -76,15 +76,6 @@ function copyStartTemplate(){
     cp lib/dev/start_template.sh $projectName/node$1/start.sh
 
     cp lib/common.sh $projectName/node$1/node/common.sh
-
-    cp lib/dev/migrate_to_tessera.sh $projectName/node$1
-
-    cp lib/dev/tessera-migration.properties $projectName/node$1/node
-
-    cp lib/dev/empty_h2.mv.db $projectName/node$1/node/qdata/node$1.mv.db
-
-    PATTERN="s/#mNode#/node$1/g"
-    sed -i $PATTERN $projectName/node$1/migrate_to_tessera.sh
     
 }
 
@@ -104,7 +95,7 @@ function generateEnode(){
     fi
     # echo \"enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001?discport=0\"$COMMA >> $projectName/static-nodes.json
     if [ $i -eq 1 ]; then
-        BOOTNODE_IP=enode://$enode@${DOCKER_NETWORK_IP}$(($1+1)):22001
+        BOOTNODE_IP=enode://$enode@${DOCKER_NETWORK_IP}$(($1*2)):22001
     fi
 
     
@@ -146,16 +137,19 @@ function createAccount(){
     rm -rf datadir
 }
 
-function addNodeToDC(){
+function addQuorumToDC(){
     echo "  node"$1: >> $projectName/docker-compose.yml
     echo "    container_name: node"$1 >> $projectName/docker-compose.yml
-    echo "    image: "$dockerImage >> $projectName/docker-compose.yml
+    echo "    image: "$quorumImage >> $projectName/docker-compose.yml
     echo "    working_dir: /node"$1 >> $projectName/docker-compose.yml
     echo "    command: [\"bash\" , \"start.sh\"]" >> $projectName/docker-compose.yml
     echo "    volumes:" >> $projectName/docker-compose.yml
     echo "      - ./node$1:/node$1" >> $projectName/docker-compose.yml
     echo "      - ./node$1:/home" >> $projectName/docker-compose.yml
-    echo "      - ./node1:/master" >> $projectName/docker-compose.yml
+    echo "    expose:" >> $projectName/docker-compose.yml
+    echo "      - \"22000\"" >> $projectName/docker-compose.yml
+    echo "      - \"22001\"" >> $projectName/docker-compose.yml
+    echo "      - \"22002\"" >> $projectName/docker-compose.yml
   
     echo -ne "node$1" >> $projectName/project.info
     echo -ne "\t$(cat $projectName/node$1/node/qdata/keys/node$1.pub)" >> $projectName/project.info
@@ -169,15 +163,11 @@ function addNodeToDC(){
         fi
         echo "    ports:" >> $projectName/docker-compose.yml
         echo "      - \"2${i}00:22000\"" >> $projectName/docker-compose.yml
-        echo "      - \"2${i}01:22001\"" >> $projectName/docker-compose.yml
-        echo "      - \"2${i}02:22002\"" >> $projectName/docker-compose.yml
-        echo "      - \"2${i}04:22004\"" >> $projectName/docker-compose.yml
 
         echo -ne "\tlocalhost" >> $projectName/project.info
         echo -ne "\t2${i}00" >> $projectName/project.info
         echo -ne "\t2${i}01" >> $projectName/project.info
         echo -ne "\t2${i}02" >> $projectName/project.info
-        echo -ne "\t2${i}04\n" >> $projectName/project.info
 
         echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1+1)):22000\"\n" >> $projectName/peers.json
         if [ $i -eq $nodeCount ]; then
@@ -192,9 +182,8 @@ function addNodeToDC(){
         echo -ne "\t22000" >> $projectName/project.info
         echo -ne "\t22001" >> $projectName/project.info    
         echo -ne "\t22002" >> $projectName/project.info
-        echo -ne "\t22004\n" >> $projectName/project.info
 
-        echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1+1)):2${i}00\"\n" >> $projectName/peers.json
+        echo -ne "\t\t\"endpoint\": \"http://$DOCKER_NETWORK_IP$(($1*2)):2${i}00\"\n" >> $projectName/peers.json
         if [ $i -eq $nodeCount ]; then
             echo -ne "\t}\n" >> $projectName/peers.json
         else
@@ -204,7 +193,42 @@ function addNodeToDC(){
 
     echo "    networks:" >> $projectName/docker-compose.yml
     echo "      vpcbr:" >> $projectName/docker-compose.yml
-    echo "        ipv4_address: $DOCKER_NETWORK_IP$(($1+1))" >> $projectName/docker-compose.yml
+    echo "        ipv4_address: $DOCKER_NETWORK_IP$(($1*2))" >> $projectName/docker-compose.yml
+    
+
+}
+
+function addNodeManagerToDC(){
+    echo "  nodeManager"$1: >> $projectName/docker-compose.yml
+    echo "    container_name: nodeManager"$1 >> $projectName/docker-compose.yml
+    echo "    image: "$nodeManagerImage >> $projectName/docker-compose.yml
+    echo "    working_dir: /root/quorum-maker" >> $projectName/docker-compose.yml
+    echo "    command: [\"bash\" , \"start_nodemanager.sh\" , \"22000\" , \"22004\" , \"$DOCKER_NETWORK_IP$(($1*2))\"]" >> $projectName/docker-compose.yml
+    echo "    volumes:" >> $projectName/docker-compose.yml
+    echo "      - ./node$1:/home" >> $projectName/docker-compose.yml
+        
+    if [[ -f .qm_export_ports || ! -z "$exposePorts" ]]; then
+    
+        i=$1
+
+        if [ $i -lt 10 ]; then 
+            i="0"$i
+        fi
+        echo "    ports:" >> $projectName/docker-compose.yml
+        echo "      - \"2${i}04:22004\"" >> $projectName/docker-compose.yml
+
+        echo -ne "\tlocalhost" >> $projectName/project.info
+        echo -ne "\t2${i}04\n" >> $projectName/project.info
+
+    else
+    
+        echo -ne "\t$DOCKER_NETWORK_IP$(($1+1))" >> $projectName/project.info
+        echo -ne "\t22004\n" >> $projectName/project.info
+    fi
+
+    echo "    networks:" >> $projectName/docker-compose.yml
+    echo "      vpcbr:" >> $projectName/docker-compose.yml
+    echo "        ipv4_address: $DOCKER_NETWORK_IP$(($1*2 + 1))" >> $projectName/docker-compose.yml
     
 
 }
@@ -222,7 +246,9 @@ function createNodeDirs(){
         createAccount $i    
         generateNodeConf $i
         generateSetupConf $i
-        addNodeToDC $i
+        addQuorumToDC $i
+        let "i = i"
+        addNodeManagerToDC $i
         displayProgress $nodeCount $i
 
         if [ $i -eq $nodeCount ]; then

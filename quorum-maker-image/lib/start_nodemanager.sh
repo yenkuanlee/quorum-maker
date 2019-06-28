@@ -3,6 +3,8 @@
 # $1 is rpcPort and $2 is golistenPort and $3 is IP Address
 cd /root/quorum-maker/
 
+sleep 15
+
 if [ -z "$3" ]; then
 	socket="http://localhost:$1"
 else	

@@ -1,0 +1,5 @@
+FROM ubuntu
+
+ADD bin/geth /usr/local/bin
+ADD bin/bootnode /usr/local/bin
+ADD bin/crux /usr/local/bin

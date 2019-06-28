@@ -1,17 +1,8 @@
 FROM ubuntu
-# ENV DEBIAN_FRONTEND noninteractive
-# ADD lib/install_baseimage.sh /root/quorum-maker/install_baseimage.sh
-# RUN /root/quorum-maker/install_baseimage.sh
 
 ADD bin/solc /usr/local/bin
-ADD bin/geth /usr/local/bin
-ADD bin/bootnode /usr/local/bin
-ADD bin/crux /usr/local/bin
 ADD bin/quorum-maker-nodemanager /root/quorum-maker/NodeManager
 ADD bin/dist /root/quorum-maker/NodeManagerUI
-
-# ADD quorum-maker-nodemanager/quorum-maker-nodemanager /root/quorum-maker/NodeManager
-# ADD quorum-maker-ui/webApp/dist /root/quorum-maker/NodeManagerUI
 
 ADD lib/start_nodemanager.sh /root/quorum-maker/start_nodemanager.sh
 RUN chmod +x /root/quorum-maker/start_nodemanager.sh
